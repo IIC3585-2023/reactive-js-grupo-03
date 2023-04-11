@@ -1,6 +1,5 @@
 //move pacman
-export function movePacman(e, squares, player, width, score, scoreDisplay, ghosts, keyUpSubject, squaresSubject) {
-
+export function movePacman(e, squares, player, width, squaresSubject) {
   squares[player.currentIndex].classList.remove('pac-man')
   switch(e?.keyCode) {
     case 65:
@@ -47,15 +46,8 @@ export function movePacman(e, squares, player, width, score, scoreDisplay, ghost
       break;
   }
   squares[player.currentIndex].classList.add('pac-man')
-  // pacDotEaten(squares, pacmanCurrentIndex, score, scoreDisplay);
-  // powerPelletEaten(squares, pacmanCurrentIndex, score, ghosts);
-  // checkForGameOver(squares, pacmanCurrentIndex, ghosts, keyUpSubject);
-  // checkForWin(score, ghosts, keyUpSubject);
   squaresSubject.next(squares);
-  // pacmanCurrentIndexSubject.next(player.currentIndex);
 }
-
-// document.addEventListener('keyup', movePacman)
 
 // what happens when you eat a pac-dot
 export function pacDotEaten(squares, player, score, scoreDisplay) {
@@ -85,8 +77,6 @@ export function powerPelletEaten(squares, player, score, ghosts) {
 
 //check for a game over
 export function checkForGameOver(squares, player, ghosts, keyUpSubject) {
-  // TODO: AIUDA
-  console.log('🥵🍆💦 ~ file: actions.js:88 ~ checkForGameOver ~ player:', player)
   if (squares[player.currentIndex].classList.contains('ghost') &&
     !squares[player.currentIndex].classList.contains('scared-ghost')) {
     ghosts.forEach(ghost => clearInterval(ghost.timerId));
@@ -109,7 +99,6 @@ export function checkForWin(squares, score, ghosts, keyUpSubject) {
 }
 
 export function moveGhost(ghost, squares, player, ghosts, keyUp, width) {
-  console.log('🥵🍆💦 ~ file: actions.js:110 ~ moveGhost ~ player:', player)
   const directions =  [-1, +1, width, -width]
   let direction = directions[Math.floor(Math.random() * directions.length)]
 
@@ -138,6 +127,6 @@ export function moveGhost(ghost, squares, player, ghosts, keyUp, width) {
       score +=100
       squares[ghost.currentIndex].classList.add(ghost.className, 'ghost')
     }
-  checkForGameOver(squares, player.currentIndex, ghosts, keyUp)
+    checkForGameOver(squares, player, ghosts, keyUp)
   }, ghost.speed)
 }

@@ -6,8 +6,8 @@ import { Ghost, Pacman } from "./classes.js";
 
 function pacmanGame() {
   const p1Movements = [65, 87, 68, 83];
-  let player1 = new Pacman(1, 490);
-  let player2 = new Pacman(2, 489);
+  let player1 = new Pacman(1, 489);
+  let player2 = new Pacman(2, 490);
   let currentPlayer = player1;
   let score = 0;
   let squares = [];
@@ -34,7 +34,7 @@ function pacmanGame() {
                   .pipe(rxjs.takeUntil(keyUpSubject))
                   .subscribe((e) => {
                     currentPlayerSubject.next(p1Movements.includes(e.keyCode) ? player1 : player2);
-                    movePacman(e, squares, currentPlayerSubject.value, width, score, scoreDisplay, ghosts, keyUpSubject, squaresSubject);
+                    movePacman(e, squares, currentPlayerSubject.value, width, squaresSubject);
                   });
 
   const pacDotEatenCurried = (squares, currentPlayer) => pacDotEaten(squares, currentPlayer, score, scoreDisplay);
@@ -42,23 +42,18 @@ function pacmanGame() {
   const checkForGameOverCurried = (squares, currentPlayer) => checkForGameOver(squares, currentPlayer, ghosts, keyUpSubject);
   const checkForWinCurried = (squares) => checkForWin(squares, score, ghosts, keyUpSubject);
   
-  squaresSubject.pipe(
-    rxjs.mergeMap((newSquares) => rxjs.of(newSquares).pipe(
-      rxjs.map(squares => ({
-        squares,
-        currentPlayer: currentPlayerSubject.value
-      }))
-    )),
-  ).subscribe(({ squares, currentPlayer }) => {
+  function runGameFunctions(squares, currentPlayer) {
     pacDotEatenCurried(squares, currentPlayer);
     powerPelletEatenCurried(squares, currentPlayer);
     checkForGameOverCurried(squares, currentPlayer);
-    checkForWinCurried(squares, currentPlayer);
-  });
+    checkForWinCurried(squares);
+  }
 
-  // pacmanCurrentIndexSubject.subscribe((newPacmanCurrentIndex) => {
-  //   pacmanCurrentIndex = newPacmanCurrentIndex
-  // });
+  squaresSubject.pipe(
+    rxjs.map(newSquares => ({ squares: newSquares, currentPlayer: currentPlayerSubject.value })),
+  ).subscribe(({ squares, currentPlayer }) => {
+    runGameFunctions(squares, currentPlayer);
+  });
   
   //draw my ghosts onto the grid
   ghosts.forEach(ghost => {
