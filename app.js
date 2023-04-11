@@ -1,5 +1,5 @@
 import { layout, width, createBoard } from "./setup.js"
-import { movePacman, pacDotEaten, powerPelletEaten, checkForGameOver, checkForWin, moveGhost } from "./actions.js"
+import { movePacman, pacDotEaten, powerPelletEaten, checkForGameOver, checkForWin, moveGhost, keyMap } from "./actions.js"
 import { Ghost, Pacman } from "./classes.js";
 
 // of, scan, interval, fromEvent, pipe
@@ -30,12 +30,13 @@ function pacmanGame() {
   const keyUpSubject = new rxjs.Subject();
   const currentPlayerSubject = new rxjs.BehaviorSubject(player1);
 
-  const keyUp = rxjs.fromEvent(document, 'keyup')
-                  .pipe(rxjs.takeUntil(keyUpSubject))
-                  .subscribe((e) => {
-                    currentPlayerSubject.next(p1Movements.includes(e.keyCode) ? player1 : player2);
-                    movePacman(e, squares, currentPlayerSubject.value, width, squaresSubject);
-                  });
+  const keyUp = rxjs.fromEvent(document, 'keyup').pipe(
+    rxjs.filter((e) => e?.keyCode in keyMap),
+    rxjs.takeUntil(keyUpSubject)
+  ).subscribe((e) => {
+    currentPlayerSubject.next(p1Movements.includes(e.keyCode) ? player1 : player2);
+    movePacman(e, squares, currentPlayerSubject.value, squaresSubject);
+  });
 
   const pacDotEatenCurried = (squares, currentPlayer) => pacDotEaten(squares, currentPlayer, score, scoreDisplay);
   const powerPelletEatenCurried = (squares, currentPlayer) => powerPelletEaten(squares, currentPlayer, score, ghosts);
