@@ -1,52 +1,32 @@
+import { width } from "./setup.js"
+
 //move pacman
-export function movePacman(e, squares, player, width, squaresSubject) {
-  squares[player.currentIndex].classList.remove('pac-man')
-  switch(e?.keyCode) {
-    case 65:
-    case 37:
-      if(
-        player.currentIndex % width !== 0 &&
-        !squares[player.currentIndex -1].classList.contains('wall') &&
-        !squares[player.currentIndex -1].classList.contains('ghost-lair')
-      )
-      player.currentIndex -= 1;
-      if (squares[player.currentIndex - 1] === squares[363]) {
-        player.currentIndex = 391;
-      }
-      break;
-    case 87:
-    case 38:
-      if(
-        player.currentIndex - width >= 0 &&
-        !squares[player.currentIndex -width].classList.contains('wall') &&
-        !squares[player.currentIndex -width].classList.contains('ghost-lair')
-        ) 
-        player.currentIndex -= width;
-      break;
-    case 68:
-    case 39:
-      if(
-        player.currentIndex % width < width - 1 &&
-        !squares[player.currentIndex +1].classList.contains('wall') &&
-        !squares[player.currentIndex +1].classList.contains('ghost-lair')
-      )
-      player.currentIndex += 1;
-      if (squares[player.currentIndex + 1] === squares[392]) {
-        player.currentIndex = 364;
-      }
-      break;
-    case 83:
-    case 40:
-      if (
-        player.currentIndex + width < width * width &&
-        !squares[player.currentIndex + width].classList.contains('wall') &&
-        !squares[player.currentIndex + width].classList.contains('ghost-lair')
-      )
-      player.currentIndex += width;
-      break;
+export const keyMap = {
+  65: -1, // a or left arrow
+  37: -1, // a or left arrow
+  87: -width, // w or up arrow
+  38: -width, // w or up arrow
+  68: 1, // d or right arrow
+  39: 1, // d or right arrow
+  83: width, // s or down arrow
+  40: width, // s or down arrow
+};
+
+export function movePacman(e, squares, player, squaresSubject) {
+  const direction = keyMap[e?.keyCode] || 0;
+  const newIndex = player.currentIndex + direction;
+
+  if (
+    newIndex >= 0 &&
+    newIndex < squares.length &&
+    !squares[newIndex].classList.contains('wall') &&
+    !squares[newIndex].classList.contains('ghost-lair')
+  ) {
+    squares[player.currentIndex].classList.remove('pac-man');
+    player.currentIndex = newIndex;
+    squares[player.currentIndex].classList.add('pac-man');
+    squaresSubject.next(squares);
   }
-  squares[player.currentIndex].classList.add('pac-man')
-  squaresSubject.next(squares);
 }
 
 // what happens when you eat a pac-dot
@@ -65,6 +45,7 @@ export function unScareGhosts(ghosts) {
 }
 
 //what happens when you eat a power-pellet
+
 export function powerPelletEaten(squares, player, score, ghosts) {
   if (squares[player.currentIndex].classList.contains('power-pellet')) {
     score +=10
