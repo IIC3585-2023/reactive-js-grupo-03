@@ -1,0 +1,23 @@
+{
+  "type": "module",
+  "name": "reactive-js-grupo-03",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IIC3585-2023/reactive-js-grupo-03.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IIC3585-2023/reactive-js-grupo-03/issues"
+  },
+  "homepage": "https://github.com/IIC3585-2023/reactive-js-grupo-03#readme",
+  "dependencies": {
+    "rxjs": "^7.8.0"
+  }
+}
