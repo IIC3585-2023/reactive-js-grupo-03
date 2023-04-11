@@ -28,25 +28,32 @@ function pacmanGame() {
 
   const squaresSubject = new rxjs.Subject();
   const keyUpSubject = new rxjs.Subject();
+  const currentPlayerSubject = new rxjs.BehaviorSubject(player1);
 
   const keyUp = rxjs.fromEvent(document, 'keyup')
                   .pipe(rxjs.takeUntil(keyUpSubject))
                   .subscribe((e) => {
-                    currentPlayer = p1Movements.includes(e.keyCode) ? player1 : player2;
-                    movePacman(e, squares, currentPlayer, width, score, scoreDisplay, ghosts, keyUpSubject, squaresSubject);
+                    currentPlayerSubject.next(p1Movements.includes(e.keyCode) ? player1 : player2);
+                    movePacman(e, squares, currentPlayerSubject.value, width, score, scoreDisplay, ghosts, keyUpSubject, squaresSubject);
                   });
 
-  const pacDotEatenCurried = (squares) => pacDotEaten(squares, currentPlayer, score, scoreDisplay);
-  const powerPelletEatenCurried = (squares) => powerPelletEaten(squares, currentPlayer, score, ghosts);
-  const checkForGameOverCurried = (squares) => checkForGameOver(squares, currentPlayer, ghosts, keyUpSubject);
+  const pacDotEatenCurried = (squares, currentPlayer) => pacDotEaten(squares, currentPlayer, score, scoreDisplay);
+  const powerPelletEatenCurried = (squares, currentPlayer) => powerPelletEaten(squares, currentPlayer, score, ghosts);
+  const checkForGameOverCurried = (squares, currentPlayer) => checkForGameOver(squares, currentPlayer, ghosts, keyUpSubject);
   const checkForWinCurried = (squares) => checkForWin(squares, score, ghosts, keyUpSubject);
   
-  squaresSubject.subscribe((newSquares) => {
-    squares = newSquares;
-    pacDotEatenCurried(squares);
-    powerPelletEatenCurried(squares);
-    checkForGameOverCurried(squares);
-    checkForWinCurried(squares);
+  squaresSubject.pipe(
+    rxjs.mergeMap((newSquares) => rxjs.of(newSquares).pipe(
+      rxjs.map(squares => ({
+        squares,
+        currentPlayer: currentPlayerSubject.value
+      }))
+    )),
+  ).subscribe(({ squares, currentPlayer }) => {
+    pacDotEatenCurried(squares, currentPlayer);
+    powerPelletEatenCurried(squares, currentPlayer);
+    checkForGameOverCurried(squares, currentPlayer);
+    checkForWinCurried(squares, currentPlayer);
   });
 
   // pacmanCurrentIndexSubject.subscribe((newPacmanCurrentIndex) => {
