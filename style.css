@@ -1,9 +1,23 @@
+h3 {
+  font-family: 'Common Pixel', sans-serif;
+  font-size: 30px;
+  color: #fabf0f;
+  text-align: center;
+  margin: 0;
+}
+
+body {
+  background-image: url(./assets/background.jpg);
+}
+
 .grid {
   display: flex;
   flex-wrap: wrap;
   width: 560px;
   height: 560px;
   border: solid black;
+  background-color: #021199;
+  margin: auto;
 }
 
 .grid div {
@@ -12,41 +26,71 @@
 }
 
 .pac-dot {
-  background-color: green;   
-  border: 5px solid white;
+  background-color: #fabf0f;   
+  border: 7px solid #021199;
   box-sizing: border-box;
+  border-radius: 50%;
 }
 
 .wall {
-  background-color: blue;
+  background-color: #090629;
 }
 
 .power-pellet {
-  background-color: green;
+  background-color: #fabf0f;
   border-radius: 10px;
 }
 
 .blinky {
-  background-color: red;
+  background-image: url(./assets/ghost-red.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #021199;
+  border: none;
+  border-radius: inherit;
 }
 
 .pinky {
-  background-color: pink;
+  background-image: url(./assets/ghost-pink.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #021199;
+  border: none;
+  border-radius: inherit;
 }
 
 .inky {
-  background-color: cyan;
+  background-image: url(./assets/ghost-cyan.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #021199;
+  border: none;
+  border-radius: inherit;
 }
 
 .clyde {
-  background-color: orange;     
+  background-image: url(./assets/ghost-yellow.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #021199;
+  border: none;
+  border-radius: inherit;
 }
 
-.pac-man {
-  background-color: yellow;
-  border-radius: 10px;
+.pac-man-p1 {
+  background-image: url(./assets/cat-1.png);
+  background-size: contain;
+  background-repeat: no-repeat;   
+}
+
+.pac-man-p2 {
+  background-image: url(./assets/cat-2.png);
+  background-size: contain;
+  background-repeat: no-repeat;   
 }
 
 .scared-ghost {
-  background-color: aquamarine;
+  background-image: url(./assets/ghost-blue.png);
+  background-size: contain;
+  background-repeat: no-repeat;
 }
