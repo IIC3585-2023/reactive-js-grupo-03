@@ -23,12 +23,13 @@ function pacmanGame() {
 
   createBoard(layout, grid, squares);
 
-  squares[player1.currentIndex].classList.add('pac-man');
-  squares[player2.currentIndex].classList.add('pac-man');
+  squares[player1.currentIndex].classList.add('pac-man-p1');
+  squares[player2.currentIndex].classList.add('pac-man-p2');
 
-  const squaresSubject = new rxjs.Subject();
   const keyUpSubject = new rxjs.Subject();
+  const squaresSubject = new rxjs.Subject();
   const currentPlayerSubject = new rxjs.BehaviorSubject(player1);
+  const scoreSubject = new rxjs.BehaviorSubject(score);
 
   const keyUp = rxjs.fromEvent(document, 'keyup').pipe(
     rxjs.filter((e) => e?.keyCode in keyMap),
@@ -38,10 +39,10 @@ function pacmanGame() {
     movePacman(e, squares, currentPlayerSubject.value, squaresSubject);
   });
 
-  const pacDotEatenCurried = (squares, currentPlayer) => pacDotEaten(squares, currentPlayer, score, scoreDisplay);
-  const powerPelletEatenCurried = (squares, currentPlayer) => powerPelletEaten(squares, currentPlayer, score, ghosts);
+  const pacDotEatenCurried = (squares, currentPlayer) => pacDotEaten(squares, currentPlayer, scoreSubject, scoreDisplay);
+  const powerPelletEatenCurried = (squares, currentPlayer) => powerPelletEaten(squares, currentPlayer, scoreSubject, scoreDisplay, ghosts);
   const checkForGameOverCurried = (squares, currentPlayer) => checkForGameOver(squares, currentPlayer, ghosts, keyUpSubject);
-  const checkForWinCurried = (squares) => checkForWin(squares, score, ghosts, keyUpSubject);
+  const checkForWinCurried = (squares) => checkForWin(squares, scoreSubject, ghosts, keyUpSubject);
   
   function runGameFunctions(squares, currentPlayer) {
     pacDotEatenCurried(squares, currentPlayer);

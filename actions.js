@@ -22,18 +22,18 @@ export function movePacman(e, squares, player, squaresSubject) {
     !squares[newIndex].classList.contains('wall') &&
     !squares[newIndex].classList.contains('ghost-lair')
   ) {
-    squares[player.currentIndex].classList.remove('pac-man');
+    squares[player.currentIndex].classList.remove(`pac-man-p${player.player}`);
     player.currentIndex = newIndex;
-    squares[player.currentIndex].classList.add('pac-man');
+    squares[player.currentIndex].classList.add(`pac-man-p${player.player}`);
     squaresSubject.next(squares);
   }
 }
 
 // what happens when you eat a pac-dot
-export function pacDotEaten(squares, player, score, scoreDisplay) {
+export function pacDotEaten(squares, player, scoreSubject, scoreDisplay) {
   if (squares[player.currentIndex].classList.contains('pac-dot')) {
-    score++
-    scoreDisplay.innerHTML = score
+    scoreSubject.next(scoreSubject.value + 1);
+    scoreDisplay.innerHTML = scoreSubject.value;
     squares[player.currentIndex].classList.remove('pac-dot')
   }
   return squares;
@@ -46,9 +46,10 @@ export function unScareGhosts(ghosts) {
 
 //what happens when you eat a power-pellet
 
-export function powerPelletEaten(squares, player, score, ghosts) {
+export function powerPelletEaten(squares, player, scoreSubject, scoreDisplay, ghosts) {
   if (squares[player.currentIndex].classList.contains('power-pellet')) {
-    score +=10
+    scoreSubject.next(scoreSubject.value + 10);
+    scoreDisplay.innerHTML = scoreSubject.value;
     ghosts.forEach(ghost => ghost.isScared = true)
     setTimeout(() => unScareGhosts(ghosts), 10000)
     squares[player.currentIndex].classList.remove('power-pellet')
@@ -69,8 +70,8 @@ export function checkForGameOver(squares, player, ghosts, keyUpSubject) {
 }
 
 //check for a win - more is when this score is reached
-export function checkForWin(squares, score, ghosts, keyUpSubject) {
-  if (score === 274) {
+export function checkForWin(squares, scoreSubject, ghosts, keyUpSubject) {
+  if (scoreSubject.value === 274) {
     ghosts.forEach(ghost => clearInterval(ghost.timerId));
     keyUpSubject.next();    
     setTimeout(function(){ alert("You have WON!"); }, 500);
