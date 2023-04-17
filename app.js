@@ -1,21 +1,11 @@
-import { layout, width, createBoard } from "./setup.js"
-import { movePacman, pacDotEaten, powerPelletEaten, checkForGameOver, checkForWin, moveGhost, keyMap } from "./actions.js"
+import { layout, createBoard } from "./setup.js"
+import { unScareGhosts, checkForWin, moveGhost, keyMapPlayer1, keyMapPlayer2, handlePlayerMovement, showScore } from "./actions.js"
 
-// of, scan, interval, fromEvent, pipe
+const PLAYER_1_STARTING_POSITION = 489;
+const PLAYER_2_STARTING_POSITION = 490;
+const grid = document.querySelector('.grid');
 
-function pacmanGame() {
-  const p1Movements = [65, 87, 68, 83];
-  let player1 = {
-    player: 1,
-    currentIndex: 489,
-  }
-  let player2 = {
-    player: 2,
-    currentIndex: 490,
-  }
-  let currentPlayer = player1;
-  let score = 0;
-  let squares = [];
+let squares = createBoard(layout, grid, []);
   let ghosts = [
     {
       className: 'blinky',
@@ -51,54 +41,80 @@ function pacmanGame() {
     },
   ];
 
-  const scoreDisplay = document.getElementById('score');
-  const grid = document.querySelector('.grid');
+const ScoreBehavior$ = new rxjs.BehaviorSubject(0);
+const IsAlive$ = new rxjs.BehaviorSubject(true)
+const Ghosts$ = new rxjs.Subject(ghosts);
 
-  createBoard(layout, grid, squares);
+const handlePlayerMovementCurried = (prevIndex, key) => handlePlayerMovement(prevIndex, key, squares);
 
-  squares[player1.currentIndex].classList.add('pac-man-p1');
-  squares[player2.currentIndex].classList.add('pac-man-p2');
+const Player1Movement$ = rxjs.fromEvent(document, 'keydown').pipe(
+  rxjs.filter((e) => e?.keyCode in keyMapPlayer1),
+  rxjs.scan(handlePlayerMovementCurried, PLAYER_1_STARTING_POSITION),
+  rxjs.startWith(PLAYER_1_STARTING_POSITION),
+)
 
-  const keyUpSubject = new rxjs.Subject();
-  const squaresSubject = new rxjs.Subject();
-  const currentPlayerSubject = new rxjs.BehaviorSubject(player1);
-  const scoreSubject = new rxjs.BehaviorSubject(score);
+const Player2Movement$ = rxjs.fromEvent(document, 'keydown').pipe(
+  rxjs.filter((e) => e?.keyCode in keyMapPlayer2),
+  rxjs.scan(handlePlayerMovementCurried, PLAYER_2_STARTING_POSITION),
+  rxjs.startWith(PLAYER_2_STARTING_POSITION),
+)
 
-  const keyUp = rxjs.fromEvent(document, 'keyup').pipe(
-    rxjs.filter((e) => e?.keyCode in keyMap),
-    rxjs.takeUntil(keyUpSubject)
-  ).subscribe((e) => {
-    currentPlayerSubject.next(p1Movements.includes(e.keyCode) ? player1 : player2);
-    movePacman(e, squares, currentPlayerSubject.value, squaresSubject);
-  });
+const Game$ = rxjs.combineLatest(
+  ScoreBehavior$, Player1Movement$, Player2Movement$, Ghosts$,
+  (score, player1, player2, ghosts) => ({ score, player1, player2, ghosts })
+  ).pipe(
+    rxjs.sample(rxjs.interval(10)),
+    rxjs.takeWhile(() => IsAlive$.getValue())
+  )
 
-  const pacDotEatenCurried = (squares, currentPlayer) => pacDotEaten(squares, currentPlayer, scoreSubject, scoreDisplay);
-  const powerPelletEatenCurried = (squares, currentPlayer) => powerPelletEaten(squares, currentPlayer, scoreSubject, scoreDisplay, ghosts);
-  const checkForGameOverCurried = (squares, currentPlayer) => checkForGameOver(squares, currentPlayer, ghosts, keyUpSubject);
-  const checkForWinCurried = (squares) => checkForWin(squares, scoreSubject, ghosts, keyUpSubject);
-  
-  function runGameFunctions(squares, currentPlayer) {
-    pacDotEatenCurried(squares, currentPlayer);
-    powerPelletEatenCurried(squares, currentPlayer);
-    checkForGameOverCurried(squares, currentPlayer);
-    checkForWinCurried(squares);
-  }
-
-  squaresSubject.pipe(
-    rxjs.map(newSquares => ({ squares: newSquares, currentPlayer: currentPlayerSubject.value })),
-  ).subscribe(({ squares, currentPlayer }) => {
-    runGameFunctions(squares, currentPlayer);
-  });
-  
-  //draw my ghosts onto the grid
-  ghosts.forEach(ghost => {
-    squares[ghost.currentIndex].classList.add(ghost.className)
-    squares[ghost.currentIndex].classList.add('ghost')
+const DOMContent = rxjs.fromEvent(document, 'DOMContentLoaded').pipe(
+  rxjs.tap(_ => {
+    ghosts.forEach(ghost => moveGhost(ghost, squares));
   })
+);
 
-  //move the Ghosts randomly
-  ghosts.forEach(ghost => moveGhost(ghost, squares, currentPlayer, ghosts, keyUp, width));
+DOMContent.subscribe(() => {
+  initialPositions();
+  startGame();
+  ScoreBehavior$.next(0);
+  Ghosts$.next(ghosts);
+});
+
+function startGame() {
+  Game$.subscribe(renderGameScene);
 }
 
-const DOMContent = rxjs.fromEvent(document, 'DOMContentLoaded'); 
-DOMContent.subscribe(pacmanGame);
+function renderGameScene({ score, player1, player2, ghosts }) {
+  showScore(score);
+  eatPacDot(player1);
+  eatPacDot(player2);
+  checkForGameOver(player1, ghosts);
+  checkForGameOver(player2, ghosts);
+  checkForWin(score, ghosts);
+}
+
+function eatPacDot(newIndex) {
+  if (squares[newIndex].classList.contains('pac-dot')) {
+    ScoreBehavior$.next((ScoreBehavior$.value || 0) + 1);
+    squares[newIndex].classList.remove('pac-dot')
+  } else if (squares[newIndex].classList.contains('power-pellet')) {
+    ScoreBehavior$.next(ScoreBehavior$.value + 10);
+    ghosts.forEach(ghost => ghost.isScared = true)
+    setTimeout(() => unScareGhosts(ghosts), 10000)
+    squares[newIndex].classList.remove('power-pellet')
+  }
+}
+
+function checkForGameOver(newIndex, ghosts) {
+  if (squares[newIndex].classList.contains('ghost') &&
+    !squares[newIndex].classList.contains('scared-ghost')) {
+    ghosts.forEach(ghost => clearInterval(ghost.timerId));
+    setTimeout(function(){ alert("Game Over"); }, 500);
+    IsAlive$.next(false);
+  }
+}
+
+function initialPositions() {
+  squares[PLAYER_1_STARTING_POSITION].classList.add(`pac-man-p1`);
+  squares[PLAYER_2_STARTING_POSITION].classList.add(`pac-man-p2`);
+}
