@@ -53,4 +53,6 @@ export function createBoard(layout, grid, squares) {
       squares[i].classList.add('power-pellet')
     }
   }
+
+  return squares;
 }
