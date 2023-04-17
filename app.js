@@ -1,21 +1,54 @@
 import { layout, width, createBoard } from "./setup.js"
 import { movePacman, pacDotEaten, powerPelletEaten, checkForGameOver, checkForWin, moveGhost, keyMap } from "./actions.js"
-import { Ghost, Pacman } from "./classes.js";
 
 // of, scan, interval, fromEvent, pipe
 
 function pacmanGame() {
   const p1Movements = [65, 87, 68, 83];
-  let player1 = new Pacman(1, 489);
-  let player2 = new Pacman(2, 490);
+  let player1 = {
+    player: 1,
+    currentIndex: 489,
+  }
+  let player2 = {
+    player: 2,
+    currentIndex: 490,
+  }
   let currentPlayer = player1;
   let score = 0;
   let squares = [];
   let ghosts = [
-    new Ghost('blinky', 348, 250),
-    new Ghost('pinky', 376, 400),
-    new Ghost('inky', 351, 300),
-    new Ghost('clyde', 379, 500),
+    {
+      className: 'blinky',
+      startIndex: 345,
+      speed: 250,
+      currentIndex: 345,
+      isScared: false,
+      timerId: NaN,
+    },
+    {
+      className: 'pinky',
+      startIndex: 376,
+      speed: 400,
+      currentIndex: 376,
+      isScared: false,
+      timerId: NaN,
+    },
+    {
+      className: 'inky',
+      startIndex: 351,
+      speed: 300,
+      currentIndex: 351,
+      isScared: false,
+      timerId: NaN,
+    },
+    {
+      className: 'clyde',
+      startIndex: 382,
+      speed: 500,
+      currentIndex: 382,
+      isScared: false,
+      timerId: NaN,
+    },
   ];
 
   const scoreDisplay = document.getElementById('score');

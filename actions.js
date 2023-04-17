@@ -84,7 +84,9 @@ export function moveGhost(ghost, squares, player, ghosts, keyUp, width) {
   const directions =  [-1, +1, width, -width]
   let direction = directions[Math.floor(Math.random() * directions.length)]
 
-  ghost.timerId = setInterval(function() {
+  const ghost$ = rxjs.interval(ghost.speed);
+
+  ghost$.subscribe(() => {
     //if the next squre your ghost is going to go to does not have a ghost and does not have a wall
     if  (!squares[ghost.currentIndex + direction].classList.contains('ghost') &&
       !squares[ghost.currentIndex + direction].classList.contains('wall') ) {
@@ -110,5 +112,5 @@ export function moveGhost(ghost, squares, player, ghosts, keyUp, width) {
       squares[ghost.currentIndex].classList.add(ghost.className, 'ghost')
     }
     checkForGameOver(squares, player, ghosts, keyUp)
-  }, ghost.speed)
+  });
 }
